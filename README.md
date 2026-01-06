@@ -42,7 +42,8 @@ python3 ~/.claude/skills/nano-banana-share/scripts/share.py /path/to/image.png
 
 - Python 3.10+
 - curl
-- [nanobanana MCP server](https://github.com/zhongweili/nanobanana-mcp-server) (for generation)
+
+**Optional**: [nanobanana MCP server](https://github.com/zhongweili/nanobanana-mcp-server) for AI image generation. But `share.py` works with any image file!
 
 ## File retention
 
