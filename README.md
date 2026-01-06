@@ -4,20 +4,60 @@ A Claude Code skill for **AI image generation with shareable URLs**.
 
 ## What it does
 
-When triggered, Claude will:
-1. **Generate** image using nanobanana MCP (Gemini)
-2. **Upload** to [0x0.st](https://0x0.st)
-3. **Return** shareable URL
+Self-contained image generation + sharing in one command:
 
-No API keys needed for hosting. Zero config.
+```bash
+uv run generate_and_share.py "a cute robot mascot"
+```
+
+**Output:**
+```
+Generating: a cute robot mascot...
+Saved: ~/nanobanana-images/gen_20260106_191234.png
+Uploading...
+
+URL: https://0x0.st/abc123.png
+Local: ~/nanobanana-images/gen_20260106_191234.png
+```
+
+No MCP server needed. Uses Gemini 3 Pro Image API directly.
 
 ## Installation
 
 ```bash
 cp -r nano-banana-share ~/.claude/skills/
+export GEMINI_API_KEY="your-key"
 ```
 
-## Triggers
+## Usage
+
+### Generate + Share (One Command)
+
+```bash
+# Basic generation
+uv run generate_and_share.py "sunset over mountains"
+
+# Higher resolution
+uv run generate_and_share.py "portrait photography" --resolution 2K
+
+# Edit existing image
+uv run generate_and_share.py "edit: add a rainbow" --input photo.png
+
+# Local only (skip upload)
+uv run generate_and_share.py "test prompt" --no-upload
+```
+
+### Upload Only (Existing Images)
+
+```bash
+# Share any image
+python3 share.py /path/to/image.png
+
+# Share latest generated
+python3 share.py latest
+```
+
+## Claude Code Triggers
 
 Say things like:
 - "generate an image and share it"
@@ -25,44 +65,23 @@ Say things like:
 - "shareable image of..."
 - "image URL for..."
 
-## Example
-
-**You**: "Generate a cute robot mascot and share it"
-
-**Claude**:
-1. Calls `mcp__nanobanana__generate_image`
-2. Runs `share.py` with the output path
-3. Returns: "Here's your image: https://0x0.st/abc123.png"
-
 ## How it works
 
 ```
-┌─────────────────┐     ┌─────────────┐     ┌─────────────┐
-│  nanobanana MCP │────▶│  share.py   │────▶│   0x0.st    │
-│   (Gemini AI)   │     │  (curl)     │     │   (URL)     │
-└─────────────────┘     └─────────────┘     └─────────────┘
-        ▲                                          │
-        │              Claude orchestrates         │
-        └──────────────────────────────────────────┘
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────┐
+│  Gemini 3 Pro   │────▶│  generate_and_  │────▶│   0x0.st    │
+│   Image API     │     │  share.py       │     │   (URL)     │
+└─────────────────┘     └─────────────────┘     └─────────────┘
+                              │
+                              ▼
+                        ~/nanobanana-images/
 ```
 
 ## Requirements
 
-- [nanobanana MCP server](https://github.com/zhongweili/nanobanana-mcp-server)
+- Python 3.10+
 - `GEMINI_API_KEY` environment variable
-- Python 3.10+, curl
-
-## Standalone usage
-
-The upload script also works independently:
-
-```bash
-# Share any image
-python3 scripts/share.py /path/to/image.png
-
-# Share latest nanobanana image
-python3 scripts/share.py latest
-```
+- curl (for upload)
 
 ## File retention
 

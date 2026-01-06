@@ -10,51 +10,83 @@ created: 2026-01-06
 
 ## Overview
 
-This skill wraps the nano-banana image generation capability and adds automatic upload to 0x0.st for shareable URLs. No API keys or accounts required.
+Self-contained AI image generation with automatic upload to 0x0.st for shareable URLs. Uses Gemini 3 Pro Image API directly - no MCP server required.
 
 ## When to Use
 
 - User wants to generate an image AND share it via URL
-- User has an existing nanobanana image and wants a shareable link
+- User has an existing image and wants a shareable link
 - User says "share", "URL", "link", or "upload" in context of images
 
 ## Workflow
 
-### Generate + Share (New Image)
+### Self-Contained (Recommended)
 
-1. **Generate** using nanobanana MCP:
-   ```
-   mcp__nanobanana__generate_image with user's prompt
-   ```
+Generate + upload in one command:
 
-2. **Get the output path** from the MCP response (e.g., `/Users/x/nanobanana-images/gen_*.png`)
-
-3. **Upload** using the share script:
-   ```bash
-   python3 ~/.claude/skills/nano-banana-share/scripts/share.py /path/to/image.png
-   ```
-
-4. **Return the URL** to the user (e.g., `https://0x0.st/abc123.png`)
-
-### Share Existing Image
-
-To share the most recent generated image:
 ```bash
+uv run ~/.claude/skills/nano-banana-share/scripts/generate_and_share.py "a cute robot mascot"
+```
+
+With options:
+```bash
+# Higher resolution
+uv run generate_and_share.py "sunset mountains" --resolution 2K
+
+# Edit existing image
+uv run generate_and_share.py "edit: make background blue" --input image.png
+
+# Local only (skip upload)
+uv run generate_and_share.py "test prompt" --no-upload
+```
+
+**Output**:
+```
+Generating: a cute robot mascot...
+Saved: /Users/x/nanobanana-images/gen_20260106_191234.png
+Uploading...
+
+URL: https://0x0.st/abc123.png
+Local: /Users/x/nanobanana-images/gen_20260106_191234.png
+```
+
+### Upload Only (Existing Images)
+
+To share an existing image without generating:
+
+```bash
+python3 ~/.claude/skills/nano-banana-share/scripts/share.py /path/to/image.png
+
+# Or share most recent from ~/nanobanana-images/
 python3 ~/.claude/skills/nano-banana-share/scripts/share.py latest
 ```
 
-To share a specific image:
+## Script Reference
+
+### generate_and_share.py (Primary)
+
+**Location**: `scripts/generate_and_share.py`
+
+**Requirements**: `GEMINI_API_KEY` environment variable
+
+**Usage**:
 ```bash
-python3 ~/.claude/skills/nano-banana-share/scripts/share.py /path/to/image.png
+uv run generate_and_share.py "prompt" [options]
 ```
 
-## Script Reference
+**Arguments**:
+- `prompt`: Image description or edit instructions
+- `--input, -i`: Input image for editing
+- `--resolution, -r`: 1K (default), 2K, or 4K
+- `--no-upload`: Skip upload, return local path only
+
+### share.py (Upload Only)
 
 **Location**: `scripts/share.py`
 
 **Usage**:
 ```bash
-share.py [image_path|latest]
+python3 share.py [image_path|latest]
 ```
 
 **Arguments**:
